@@ -253,19 +253,19 @@ db.updateUser("myUsername", {     // Update an Existing User
 - $options: optional flags (case-insensitive, multiline, etc.)
 
 ### Common Regex Rules
-| Pattern | Description                     | Example Match       |
-| ------ | ------------------------------- | ------------------- |
-| `^abc` | Starts with `abc`               | `abc123`, `abcde`   |
-| `abc$` | Ends with `abc`                 | `123abc`, `deabc`   |
-| `.`    | Any single character            | `a`, `1`, `#`       |
-| `a*`   | 0 or more of `a`                | \`\`, `a`, `aaa`    |
-| `a+`   | 1 or more of `a`                | `a`, `aa`           |
-| `a?`   | 0 or 1 of `a`                   | \`\`, `a`           |
-| `[abc]` | Match any one of a, b, or c     | `a`, `b`, `c`       |
-| `[^abc]` | Match anything except a, b, or c | `d`, `1`            |
-| `[a-z]` | Match any lowercase letter      | `f`, `z`            |
-| `(abc)` | Grouping                        |                     |
-| `a{2}` | Exactly 2 of `a`                | `aa`                |
+| Pattern | Description                     | Example Match     |
+| ------ | ------------------------------- |-------------------|
+| `^abc` | Starts with `abc`               | `abc123`, `abcde` |
+| `abc$` | Ends with `abc`                 | `123abc`, `deabc` |
+| `.`    | Any single character            | `a`, `1`, `#`     |
+| `a*`   | 0 or more of `a`                | ` `, `a`, `aaa`   |
+| `a+`   | 1 or more of `a`                | `a`, `aa`         |
+| `a?`   | 0 or 1 of `a`                   | ` `, `a`          |
+| `[abc]` | Match any one of a, b, or c     | `a`, `b`, `c`     |
+| `[^abc]` | Match anything except a, b, or c | `d`, `1`          |
+| `[a-z]` | Match any lowercase letter      | `f`, `z`          |
+| `(abc)` | Grouping                        |                   |
+| `a{2}` | Exactly 2 of `a`                | `aa`              |
 | `a{2,}` | At least 2 of `a`               | `aa`, `aaa`, `aaaa` |
 | `a{2,4}` | Between 2 and 4 `a`             | `aa`, `aaa`, `aaaa` |
 ### Regex Flags (`$options`)
