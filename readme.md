@@ -294,3 +294,215 @@ db.playing_cards.find({ rank: { $regex: "[ae]" } })
 // Case-sensitive exact match (regex form)
 db.playing_cards.find({ suit: { $regex: "^Hearts$" } })
 ```
+
+## Flask API
+
+- run the MongoDB server `net start MongoDB` this will run the server in default port `27017`
+- run the API (i.e. execute `app.py`)
+- open `Postman`
+
+### Checking the API 
+- select `GET` method 
+- type the link for the API `http://127.0.0.1:5000/`
+- click `send` 
+
+in Response, you will see 
+```
+{
+    "endpoints": [
+        "/cards [GET, POST]",
+        "/cards/<id> [PUT, PATCH, DELETE]"
+    ],
+    "message": "Welcome to the Playing Cards API!"
+}
+```
+
+### running GET method
+
+- select `GET` method 
+- type the link for the API `http://127.0.0.1:5000/cards`
+- click `send` 
+
+in Response, you will see all the data stored in `playing_cards` DB
+
+**OR**
+- type the link for the API `http://127.0.0.1:5000/cards/<_id>`  where <_id> is  document id 
+(i.e. `687cefcae6934e8424e0a845`)
+    ```
+    http://localhost:5000/cards/687cefcae6934e8424e0a845
+    ```
+- click `send` 
+
+in Response, you will see only if there is a match
+```
+{
+    "_id": "687cefcae6934e8424e0a845",
+    "color": "Red",
+    "rank": "4",
+    "suit": "Hearts",
+    "value": 4
+}
+// when the specified ID document is not found 
+{
+    "error": "Card not found"
+}
+// when the specified is totally wrong (ID format)
+{
+    "error": "Invalid ID format"
+}
+```
+
+**OR**
+
+to specifically use two queries use `http://127.0.0.1:5000/cards/search?suit=Hearts&color=Red`
+or a one `http://127.0.0.1:5000/cards/search?color=Black`
+- type the link for the API `http://127.0.0.1:5000/cards/search?color=Black`
+- click `send` 
+
+in Response, you will see a List containing all the documents matching the criteria
+```
+[
+    {
+        "_id": "687cb55dc10863b0d6a9507e",
+        "color": "Black",
+        "rank": "Queen",
+        "suit": "Spades",
+        "value": 12
+    },
+    {
+        "_id": "687cb55dc10863b0d6a9507f",
+        "color": "Black",
+        "rank": "10",
+        "suit": "Clubs",
+        "value": 10
+    }
+]
+// for no matched, an empty list 
+{
+    "Message": "no data found"
+}
+```
+
+
+
+### running POST method
+
+- select `POST` method 
+- type the link for the API `http://127.0.0.1:5000/cards`
+- select `body` then `raw` and then `JSON` Specifying that you want to send a JSON file to create document
+- type 
+```
+{
+  "suit": "Hearts",
+  "rank": "2",
+  "color": "Red",
+  "value": 2
+}
+```
+- click `send` 
+
+in Response, you will see the _id of the document (and this is used to reference data stored in the document)
+```
+{
+    "inserted_id": "687cefcae6934e8424e0a845"
+}
+
+// and yes you will see an error message if you again try to insert the same data into an indexed Database.
+{
+    "error": "Duplicate card entry: This card already exists in the database. Duplicates are not allowed."
+}
+```
+### running PUT method
+
+- select `PUT` method
+- type the link for the API `http://localhost:5000/cards/<_id>`   where <_id> is  document id 
+(i.e. `687cefcae6934e8424e0a845`)
+    ```
+    http://localhost:5000/cards/687cefcae6934e8424e0a845
+    ```
+- select `body` then `raw` and then `JSON` Specifying that you want to send a JSON file to Replace document
+- type 
+```
+{
+  "suit": "Hearts",
+  "rank": "3",
+  "color": "Red",
+  "value": 3
+}
+```
+- click `send` 
+
+in Response for success, you will see the modified count (all the documents modified in that query).
+```
+// this will also be displayed if the same ID is being replaced with the same data
+{
+    "modified_count": 1
+}
+// if the card details already exist in other documents. then the response will be 
+{
+    "error": "the card already exist, cannot update this card with the same data"
+}
+// if ID does'nt match with any stored IDs
+{
+    "error": "Card not found"
+}
+```
+
+### running PATCH method
+
+- select `PATCH` method 
+- type the link for the API `http://localhost:5000/cards/<_id>`   where <_id> is  document id 
+(i.e. `687cefcae6934e8424e0a845`)
+    ```
+    http://localhost:5000/cards/687cefcae6934e8424e0a845
+    ```
+- select `body` then `raw` and then `JSON` Specifying that you want to send a JSON file to update document
+- type 
+```
+{
+  "rank": "4",
+  "value": 4
+}
+```
+- click `send` 
+
+in Response for success, you will see the modified count (all the documents modified in that query).
+```
+// the modified_count will become 0, if you try to again change it to the same value(it's already been done)
+{
+    "modified_count": 1
+}
+// if the card details already exist in other documents. then the response will be 
+{
+    "error": "the card already exist, cannot update this card with the same data"
+}
+// if ID does'nt match with any stored IDs
+{
+    "error": "Card not found"
+}
+```
+and for doing this again the count in the Response will be 0
+
+
+### running DELETE method
+
+- select `DELETE` method 
+- type the link for the API `http://localhost:5000/cards/<_id>`   where <_id> is  document id 
+(i.e. `687cbc72f365deb1ce4b3843`)
+    ```
+    http://localhost:5000/cards/687cbc72f365deb1ce4b3843
+    ```
+- click `send` 
+
+in Response for success, you will see the modified count (all the documents modified in that query).
+```
+{
+    "deleted_count": 1
+}
+// if ID does'nt match with any stored IDs
+{
+    "error": "Card not found"
+}
+```
+and for doing this again the count in the Response will be 0 (because no ID is found)
+
