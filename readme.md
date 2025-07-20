@@ -93,15 +93,15 @@ db.collection.aggregate([
   { $sort: { createdAt: -1 } },
   { $limit: 10 }
 ])
-
 ```
 
 
 #### Group by Color
-<code> db.playing_cards.aggregate([
+```
+db.playing_cards.aggregate([
   { $group: { _id: "$color", count: { $sum: 1 } } }
-])</code>
-
+])
+```
 output 
 ``` output
 {
@@ -114,20 +114,22 @@ output
 }
 ```
 ### Insert New Card
-<code>
+```
 db.playing_cards.insertOne({
   suit: "Spades",
   rank: "3",
   color: "Black",
-})</code>
-
+})
+```
 ### Update a Card
-<code>
+
+```
 db.playing_cards.updateOne(
   { suit: "spades", rank: "3" },
   { $set: { value: "3" } }
 )
-</code>
+```
+
 similarly we have <code>updateMany()</code>
 
 so after adding duplicate documents<br>
