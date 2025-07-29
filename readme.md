@@ -295,6 +295,125 @@ db.playing_cards.find({ rank: { $regex: "[ae]" } })
 db.playing_cards.find({ suit: { $regex: "^Hearts$" } })
 ```
 
+---
+
+## Optimising the MongoDB query 
+
+1. Use Indexes
+```
+# Create an index on "suit" field
+collection.create_index("suit")
+
+# Compound index for multiple fields
+collection.create_index([("suit", 1), ("rank", 1)])
+```
+2. Use Projection to Limit Fields\
+By default, MongoDB returns full documents. That’s wasteful for large documents.
+```
+cards.find({"suit": "Hearts"}, {"rank": 1, "_id": 0}
+# Only returns rank of cards with suit = Hearts.
+```
+
+3. Avoid $where and Regex Without Anchors\
+$where executes JavaScript on each document — very slow.
+```
+# Bad
+cards.find({"$where": "this.suit == 'Spades'"})
+# Good
+cards.find({"suit": "Spades"})
+```
+4.  Use $in Instead of Multiple $or
+```
+# Bad
+cards.find({"$or": [{"suit": "Spades"}, {"suit": "Hearts"}]})
+# Good
+cards.find({"suit": {"$in": ["Spades", "Hearts"]}})
+```
+5. Paginate Instead of Returning Everything\
+- **Why?**\
+Loading entire collections into memory is a killer.\
+- **Use skip + limit:**
+```
+cards.find().skip(0).limit(10)  # Page 1
+cards.find().skip(10).limit(10)  # Page 2
+```
+6. Use Covered Queries\
+A **covered query** is one where **all fields used** are in the index and **no documents are fetched**.
+```
+# Index: suit + rank
+collection.create_index([("suit", 1), ("rank", 1)])
+
+# Query and projection use only indexed fields
+cards.find({"suit": "Spades"}, {"suit": 1, "rank": 1, "_id": 0})
+```
+7. Avoid Negation and Inequality Where Possible
+```
+# This can't use index efficiently
+cards.find({"suit": {"$ne": "Spades"}})
+
+# Instead, filter in app code if you must
+```
+8. Keep Your Documents Lightweight\
+MongoDB loads full documents even if you return partial fields.\
+➡️ Avoid:
+   - Deep nesting
+   - Very large arrays
+   - Excessive embedded documents
+10. Use Aggregation Pipeline When Appropriate
+```
+pipeline = [
+    {"$match": {"suit": "Hearts"}},
+    {"$group": {"_id": "$rank", "count": {"$sum": 1}}},
+    {"$sort": {"count": -1}}
+]
+
+cards.aggregate(pipeline)
+```
+11. Use Connection Pooling & Batch Operations
+    
+    If using Python or backend language:
+    
+    - Reuse MongoClient instead of creating it repeatedly
+    
+    - Use insert_many, bulk_write instead of many insert_one
+    
+Note:
+
+Use explain() to Analyze Your Query Plan
+```
+cards.find({"suit": "Spades"}).explain("executionStats")
+or 
+db.playing_cards.find({ suit: "Spades" }).explain("executionStats")
+```
+output: 
+```
+// for no index 
+"winningPlan": {
+  "stage": "COLLSCAN"
+},
+"executionStats": {
+  "totalDocsExamined": 10000,
+  "totalKeysExamined": 0
+}
+// Means it scanned all documents — no index.
+
+// with indexes 
+"winningPlan": {
+  "stage": "FETCH",
+  "inputStage": {
+    "stage": "IXSCAN",
+    "keyPattern": { "suit": 1 }
+  }
+},
+"executionStats": {
+  "totalDocsExamined": 100,
+  "totalKeysExamined": 100
+}
+// This shows MongoDB used an index scan (IXSCAN) — much faster.
+```
+
+---
+
 ## Flask API
 
 - run the MongoDB server `net start MongoDB` this will run the server in default port `27017`
